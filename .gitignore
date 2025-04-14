@@ -1,0 +1,25 @@
+# Backend (Spring Boot)
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.iml
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Configurações locais
+application.properties
+application-dev.properties
+
+# Arquivos temporários
+tmp/
+*.tmp
+*.bak
+*.swp
+*.swo
