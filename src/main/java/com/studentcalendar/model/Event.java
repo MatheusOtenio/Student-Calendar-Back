@@ -1,52 +1,53 @@
 package com.studentcalendar.model;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.LocalDateTime;
-import java.util.UUID;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "events")
+@Document(collection = "events")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Event {
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(columnDefinition = "UUID")
-    private UUID id;
+    private String id;
     
-    @Column(name = "user_id", nullable = false)
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    private String userId;
     
-    @Column(nullable = false)
     private String title;
     
-    @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
     
-    @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
     
     private String description;
     
-    @Column(columnDefinition = "INT DEFAULT 3")
-    private Integer priority;
+    private Integer priority = 3;
     
-    @Column(columnDefinition = "JSONB")
     private String recurrence;
     
-    @Column(name = "conflict_flag")
     private boolean conflictFlag;
     
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     
-    @UpdateTimestamp
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    public String getRecurrence() {
+        return recurrence;
+    }
+    
+    public void setRecurrence(String recurrence) {
+        this.recurrence = recurrence;
+    }
+    
+    public boolean isConflictFlag() {
+        return conflictFlag;
+    }
+    
+    public void setConflictFlag(boolean conflictFlag) {
+        this.conflictFlag = conflictFlag;
+    }
 }

@@ -1,14 +1,13 @@
 package com.studentcalendar.services;
 
-import com.studentcalendar.entities.Event;
-import com.studentcalendar.repositories.EventRepository;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
+import com.studentcalendar.model.Event;
+import com.studentcalendar.repository.EventRepository;
 @Service
 public class EventService {
 
@@ -23,8 +22,8 @@ public class EventService {
     public boolean checkForTimeConflicts(Event event) {
         return eventRepository.findOverlappingEvents(
             event.getUserId(),
-            event.getStartTime().toInstant(),
-            event.getEndTime().toInstant()
+            event.getStartTime(),
+            event.getEndTime()
         ).size() > 0;
     }
 
@@ -49,8 +48,8 @@ public class EventService {
         event.setEndTime(eventDetails.getEndTime());
         event.setDescription(eventDetails.getDescription());
         event.setPriority(eventDetails.getPriority());
-        event.setRecurrenceRule(eventDetails.getRecurrenceRule());
-        event.setTimeZone(eventDetails.getTimeZone());
+        event.setRecurrence(eventDetails.getRecurrence());
+        event.setConflictFlag(eventDetails.isConflictFlag());
         
         return eventRepository.save(event);
     }

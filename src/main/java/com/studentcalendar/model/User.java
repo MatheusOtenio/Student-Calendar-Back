@@ -1,24 +1,27 @@
 package com.studentcalendar.model;
 
-import javax.persistence.*;
-import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
-@Entity
-@Table(name = "users")
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+@Document(collection = "users")
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
     
-    @Column(unique = true)
     private String username;
     
     private String password;
     
-    @OneToMany(mappedBy = "user")
-    private Set<CalendarEvent> events;
+    @DBRef
+    private Set<Event> events;
 
     // UserDetails interface methods
     @Override
@@ -27,14 +30,14 @@ public class User implements UserDetails {
     }
 
     // Getters and setters
-    public Long getId() { return id; }
+    public String getId() { return id; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
-    public Set<CalendarEvent> getEvents() { return events; }
+    public Set<Event> getEvents() { return events; }
 
     public void setUsername(String username) { this.username = username; }
     public void setPassword(String password) { this.password = password; }
-    public void setEvents(Set<CalendarEvent> events) { this.events = events; }
+    public void setEvents(Set<Event> events) { this.events = events; }
 
     // Security interface methods
     @Override

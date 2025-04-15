@@ -1,22 +1,17 @@
 package com.studentcalendar.repository;
 
-import com.studentcalendar.model.Event;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface EventRepository extends JpaRepository<CalendarEvent, Long> {
-    List<CalendarEvent> findByUser(User user);
-    
-    Optional<CalendarEvent> findByIdAndUser(Long id, User user);
-    
-    void deleteByIdAndUser(Long id, User user);
-    
-    @Query("SELECT e FROM CalendarEvent e WHERE e.user = :user AND " +
-           "(e.start BETWEEN :start AND :end OR e.end BETWEEN :start AND :end)")
-    List<CalendarEvent> findBetweenDatesForUser(@Param("user") User user,
-                                              @Param("start") LocalDateTime start,
-                                              @Param("end") LocalDateTime end);
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+
+import com.studentcalendar.model.Event;
+
+public interface EventRepository extends MongoRepository<Event, String> {
+
+    @Query("{ 'userId': ?0, $or: [ { 'startTime': { $gte: ?1, $lte: ?2 } }, { 'endTime': { $gte: ?1, $lte: ?2 } } ] }")
+    List<Event> findOverlappingEvents(String userId, LocalDateTime start, LocalDateTime end);
+
+    List<Event> findByUserId(String userId);
 }
