@@ -9,5 +9,6 @@ import com.studentcalendar.model.User;
 
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {
+    // Este método estava faltando ou não tinha o nome correto
     Optional<User> findByUsername(String username);
 }

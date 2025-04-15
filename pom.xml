@@ -18,7 +18,8 @@
 	<properties>
 		<mainClass>com.studentcalendar.Application</mainClass>
 		<java.version>17</java.version>
-		<flyway.version>9.22.3</flyway.version>
+		<!-- Remova a linha abaixo se não usar Flyway -->
+		<!-- <flyway.version>9.22.3</flyway.version> -->
 	</properties>
 
 	<dependencies>
@@ -68,6 +69,14 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -1,11 +1,13 @@
 package com.studentcalendar.model;
 
 import java.time.LocalDateTime;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Document(collection = "events")
 @Data
@@ -31,9 +33,9 @@ public class Event {
     
     private boolean conflictFlag;
     
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
     
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt = LocalDateTime.now();
     
     public String getRecurrence() {
         return recurrence;
