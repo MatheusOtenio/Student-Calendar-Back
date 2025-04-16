@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.studentcalendar.exception.ResourceNotFoundException;
 import com.studentcalendar.model.Event;
-import com.studentcalendar.services.EventService;
+import com.studentcalendar.service.EventService;
 
 @RestController
 @RequestMapping("/api/events")

@@ -1,4 +1,4 @@
-package com.studentcalendar.services;
+package com.studentcalendar.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
