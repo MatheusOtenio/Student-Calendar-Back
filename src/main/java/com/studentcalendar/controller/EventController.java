@@ -1,4 +1,4 @@
-package com.studentcalendar.controllers;
+package com.studentcalendar.controller;
 
 import java.security.Principal;
 import java.util.List;

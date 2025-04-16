@@ -1,4 +1,7 @@
-package com.studentcalendar.controllers;
+package com.studentcalendar.controller;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,9 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.studentcalendar.model.User;
 import com.studentcalendar.repository.UserRepository;
 import com.studentcalendar.security.JwtTokenProvider;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
