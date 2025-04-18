@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from models import Tarefa, Cronograma, User
-from auth import get_password_hash
+from auth import get_password_hash, verify_password
 
 # Funções CRUD para usuários
 def get_user_by_username(db: Session, username: str):
@@ -14,7 +14,7 @@ def authenticate_user(db: Session, username: str, password: str):
     user = get_user_by_username(db, username)
     if not user:
         return False
-    if not auth.verify_password(password, user.hashed_password):
+    if not verify_password(password, user.hashed_password):
         return False
     return user
 
