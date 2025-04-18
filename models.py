@@ -30,7 +30,7 @@ class Cronograma(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     data = Column(Date, nullable=False)
-    tarefas_ids = Column(ARRAY(Integer))
+    tarefas_ids = Column(String(500))  # Armazenará IDs como string JSON
     user_id = Column(Integer, ForeignKey("users.id"))
     
     user = relationship("User", back_populates="cronogramas")

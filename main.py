@@ -38,7 +38,7 @@ app = FastAPI()
 origins = [
     "http://localhost",
     "http://localhost:8501",  # Porta padrão do Streamlit
-    "https://student-calendar-v2.streamlit.app",  # Domínio do frontend em produção
+    "https://student-calendar.streamlit.app/",  # Domínio do frontend em produção
     "*",  # Temporariamente permitir todas as origens durante desenvolvimento
 ]
 
