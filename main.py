@@ -5,12 +5,32 @@ from typing import List
 from datetime import date, datetime, timedelta
 from pydantic import BaseModel
 from typing import Optional, List
-from database import get_db
+from database import get_db, engine
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError, ProgrammingError
 import crud
 import models
 from auth import Token, UserCreate, User, authenticate_user, create_access_token, get_current_active_user, ACCESS_TOKEN_EXPIRE_MINUTES
+import traceback
+
+# Tentar criar as tabelas do banco de dados
+try:
+    models.Base.metadata.create_all(bind=engine)
+    print("Tabelas criadas ou já existem no banco de dados")
+except (OperationalError, ProgrammingError) as e:
+    print(f"Erro ao criar tabelas: {e}")
+    traceback.print_exc()
+    raise HTTPException(
+        status_code=500,
+        detail="Erro ao conectar com o banco de dados. Verifique as configurações de conexão."
+    )
+except Exception as e:
+    print(f"Erro inesperado ao criar tabelas: {e}")
+    traceback.print_exc()
+    raise HTTPException(
+        status_code=500,
+        detail="Erro inesperado ao inicializar o banco de dados."
+    )
 
 app = FastAPI()
 
