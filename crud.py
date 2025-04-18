@@ -10,31 +10,22 @@ def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
 
-def authenticate_user(db: Session, username: str, password: str):
-    user = get_user_by_username(db, username)
-    if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
+# Função authenticate_user foi movida para auth.py para evitar duplicação
 
 def create_user(db: Session, user_data):
     try:
-        if hasattr(user_data, "password"):
-            password = user_data.password
-        else:
-            password = user_data["password"]
-            
-        hashed_password = get_password_hash(password)
-        
+        # Verifica se user_data é um dicionário ou um objeto Pydantic
         if hasattr(user_data, "dict"):
+            password = user_data.password
             user_dict = user_data.dict()
             del user_dict["password"]  # Remove senha em texto plano
-            db_user = User(**user_dict, hashed_password=hashed_password)
         else:
+            password = user_data["password"]
             user_dict = user_data.copy()
             user_dict.pop("password", None)  # Remove senha em texto plano
-            db_user = User(**user_dict, hashed_password=hashed_password)
+            
+        hashed_password = get_password_hash(password)
+        db_user = User(**user_dict, hashed_password=hashed_password)
         
         db.add(db_user)
         db.commit()
