@@ -18,12 +18,10 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Configuração de criptografia de senha
-# Configuração atualizada para resolver o problema com bcrypt 4.3.0
+# Configuração simplificada para compatibilidade com versões recentes do bcrypt
 pwd_context = CryptContext(
     schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__ident="2b",  # Especifica a versão do bcrypt
-    bcrypt__min_rounds=12  # Define o número mínimo de rounds
+    deprecated="auto"
 )
 
 # Configuração do OAuth2
