@@ -18,15 +18,24 @@ def authenticate_user(db: Session, username: str, password: str):
         return False
     return user
 
-def create_user(db: Session, user_data: dict):
+def create_user(db: Session, user_data):
     try:
-        hashed_password = get_password_hash(user_data["password"])
-        db_user = User(
-            username=user_data["username"],
-            email=user_data.get("email"),
-            hashed_password=hashed_password,
-            is_active=True
-        )
+        if hasattr(user_data, "password"):
+            password = user_data.password
+        else:
+            password = user_data["password"]
+            
+        hashed_password = get_password_hash(password)
+        
+        if hasattr(user_data, "dict"):
+            user_dict = user_data.dict()
+            del user_dict["password"]  # Remove senha em texto plano
+            db_user = User(**user_dict, hashed_password=hashed_password)
+        else:
+            user_dict = user_data.copy()
+            user_dict.pop("password", None)  # Remove senha em texto plano
+            db_user = User(**user_dict, hashed_password=hashed_password)
+        
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
