@@ -1,17 +1,14 @@
 from datetime import datetime, timedelta
 from typing import Optional
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-
 from database import get_db
 import models
 import crud
-
 import os
 from dotenv import load_dotenv
 load_dotenv()
