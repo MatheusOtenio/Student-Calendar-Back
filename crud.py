@@ -1,7 +1,43 @@
 from sqlalchemy.orm import Session
-from models import Tarefa, Cronograma
+from models import Tarefa, Cronograma, User
+from auth import get_password_hash
 
-def get_tarefas(db: Session):
+# Funções CRUD para usuários
+def get_user_by_username(db: Session, username: str):
+    return db.query(User).filter(User.username == username).first()
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.email == email).first()
+
+
+def authenticate_user(db: Session, username: str, password: str):
+    user = get_user_by_username(db, username)
+    if not user:
+        return False
+    if not auth.verify_password(password, user.hashed_password):
+        return False
+    return user
+
+def create_user(db: Session, user_data: dict):
+    try:
+        hashed_password = get_password_hash(user_data["password"])
+        db_user = User(
+            username=user_data["username"],
+            email=user_data.get("email"),
+            hashed_password=hashed_password,
+            is_active=True
+        )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+    except Exception as e:
+        db.rollback()
+        raise e
+
+def get_tarefas(db: Session, user_id: int = None):
+    if user_id:
+        return db.query(Tarefa).filter(Tarefa.user_id == user_id).all()
     return db.query(Tarefa).all()
 
 def create_tarefa(db: Session, tarefa_data: dict):
@@ -29,7 +65,9 @@ def delete_tarefa(db: Session, tarefa_id: int):
     db.commit()
     return db_tarefa
 
-def get_cronogramas(db: Session):
+def get_cronogramas(db: Session, user_id: int = None):
+    if user_id:
+        return db.query(Cronograma).filter(Cronograma.user_id == user_id).all()
     return db.query(Cronograma).all()
 
 def create_cronograma(db: Session, cronograma_data: dict):
