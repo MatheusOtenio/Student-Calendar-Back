@@ -1,38 +1,44 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List
+from fastapi.responses import JSONResponse
+from typing import List, Optional
 from datetime import date, datetime, timedelta
 from pydantic import BaseModel
-from typing import Optional, List
-from database import get_db, engine
+from database import get_db, engine, check_database_connection
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, OperationalError, ProgrammingError
+from sqlalchemy.exc import IntegrityError
 import crud
 import models
 from auth import Token, UserCreate, User, authenticate_user, create_access_token, get_current_active_user, ACCESS_TOKEN_EXPIRE_MINUTES
-import traceback
+import logging
 
-# Tentar criar as tabelas do banco de dados
+# Configuração de logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Inicialização do banco de dados
 try:
     models.Base.metadata.create_all(bind=engine)
-    print("Tabelas criadas ou já existem no banco de dados")
-except (OperationalError, ProgrammingError) as e:
-    print(f"Erro ao criar tabelas: {e}")
-    traceback.print_exc()
-    raise HTTPException(
-        status_code=500,
-        detail="Erro ao conectar com o banco de dados. Verifique as configurações de conexão."
-    )
+    logger.info("Tabelas criadas ou já existem no banco de dados")
 except Exception as e:
-    print(f"Erro inesperado ao criar tabelas: {e}")
-    traceback.print_exc()
-    raise HTTPException(
-        status_code=500,
-        detail="Erro inesperado ao inicializar o banco de dados."
-    )
+    logger.error(f"Erro ao criar tabelas: {e}")
+    # Não levanta exceção aqui para permitir que a aplicação inicie mesmo com erro no banco
 
-app = FastAPI()
+app = FastAPI(title="Student Calendar API", description="API para gerenciamento de calendário estudantil")
+
+# Criação de routers
+from fastapi import APIRouter
+
+auth_router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+cronogramas_router = APIRouter(prefix="/api/cronogramas", tags=["Cronogramas"])
+tarefas_router = APIRouter(prefix="/api/tarefas", tags=["Tarefas"])
+
+# Endpoint de health check
+@app.get("/health", tags=["Health"])
+def health_check():
+    db_status = "connected" if check_database_connection() else "disconnected"
+    return {"status": "OK", "database": db_status}
 
 # Configuração de CORS para permitir requisições do frontend
 origins = [
@@ -49,6 +55,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(auth_router)
+app.include_router(tarefas_router)
+app.include_router(cronogramas_router)
 
 # Schemas Pydantic
 class TarefaBase(BaseModel):
@@ -79,7 +90,7 @@ class Cronograma(CronogramaBase):
         orm_mode = True
 
 # Endpoints de Autenticação
-@app.post("/api/auth/login", response_model=Token)
+@auth_router.post("/login", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
@@ -95,7 +106,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.post("/api/auth/register", response_model=User)
+@auth_router.post("/register", response_model=User)
 async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_username(db, username=user.username)
     if db_user:
@@ -110,30 +121,30 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=400, detail="Erro de duplicação detectado no banco de dados")
 
-@app.get("/api/auth/me", response_model=User)
+@auth_router.get("/me", response_model=User)
 async def read_users_me(current_user = Depends(get_current_active_user)):
     return current_user
 
 # Endpoints Tarefas
-@app.get("/tarefas", response_model=List[Tarefa])
+@tarefas_router.get("", response_model=List[Tarefa])
 async def read_tarefas(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user = Depends(get_current_active_user)):
     tarefas = crud.get_tarefas(db)
     return tarefas
 
-@app.post("/tarefas", response_model=Tarefa)
+@tarefas_router.post("", response_model=Tarefa)
 async def create_tarefa(tarefa: TarefaCreate, db: Session = Depends(get_db), current_user = Depends(get_current_active_user)):
     tarefa_data = tarefa.dict()
     tarefa_data["user_id"] = current_user.id
     return crud.create_tarefa(db, tarefa_data)
 
-@app.put("/tarefas/{tarefa_id}", response_model=Tarefa)
+@tarefas_router.put("/{tarefa_id}", response_model=Tarefa)
 async def update_tarefa(tarefa_id: int, tarefa: TarefaCreate, db: Session = Depends(get_db)):
     db_tarefa = crud.update_tarefa(db, tarefa_id, tarefa.dict())
     if db_tarefa is None:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
     return db_tarefa
 
-@app.delete("/tarefas/{tarefa_id}")
+@tarefas_router.delete("/{tarefa_id}")
 async def delete_tarefa(tarefa_id: int, db: Session = Depends(get_db)):
     db_tarefa = crud.delete_tarefa(db, tarefa_id)
     if db_tarefa is None:
@@ -141,11 +152,11 @@ async def delete_tarefa(tarefa_id: int, db: Session = Depends(get_db)):
     return {"ok": True}
 
 # Endpoints Cronogramas
-@app.get("/cronogramas", response_model=List[Cronograma])
+@cronogramas_router.get("", response_model=List[Cronograma], dependencies=[Depends(get_current_active_user)])
 async def read_cronogramas(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     cronogramas = crud.get_cronogramas(db)
     return cronogramas
 
-@app.post("/cronogramas", response_model=Cronograma)
+@cronogramas_router.post("", response_model=Cronograma, dependencies=[Depends(get_current_active_user)])
 async def create_cronograma(cronograma: CronogramaCreate, db: Session = Depends(get_db)):
     return crud.create_cronograma(db, cronograma.dict())

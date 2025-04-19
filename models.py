@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, Date, ARRAY, Boolean, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -30,7 +31,7 @@ class Cronograma(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     data = Column(Date, nullable=False)
-    tarefas_ids = Column(String(500))  # Armazenará IDs como string JSON
+    tarefas_ids = Column(JSONB)  # Armazena lista de IDs como array JSON
     user_id = Column(Integer, ForeignKey("users.id"))
     
     user = relationship("User", back_populates="cronogramas")
